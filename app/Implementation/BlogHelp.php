@@ -172,7 +172,6 @@ class BlogHelp implements BlogHI
                 ->limit($per_page, $offset);  // Limitar resultados por página
 
 
-            // Aplicar filtros si se proporcionan
             if ($title) {
                 $query->like('title', $title);
             } else if ($autor) {

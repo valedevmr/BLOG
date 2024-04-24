@@ -15,10 +15,10 @@ class Authentication implements AuthI
     public function authUser($data): array
     {
         if (!isset($data->email)) {
-            return ["response" =>["success" => false,"message"=>"El email es requerido"],"status_code"=>400];
+            return ["response" => ["success" => false, "message" => "El email es requerido"], "status_code" => 400];
         }
         if (!$data->email) {
-            return ["response" =>["success" => false,"message"=>"El email es requerido"],"status_code"=>400];
+            return ["response" => ["success" => false, "message" => "El email es requerido"], "status_code" => 400];
         }
 
 
@@ -26,11 +26,10 @@ class Authentication implements AuthI
             $userModel = new UserModel();
             $this->usuario = $userModel->where('email', $data->email)->first();
         } catch (\Throwable $th) {
-            return ["response" =>["success" => false, "message" => "Ocurrio un problema, intenta más tarde"],"status_code"=>409];
-            
+            return ["response" => ["success" => false, "message" => "Ocurrio un problema, intenta más tarde"], "status_code" => 409];
         }
 
-       
+
         if (!isset($data->password)) {
             return ["response" => ["success" => false, "message" => "El password es requerido"], "status_code" => 400];
         }
@@ -49,9 +48,12 @@ class Authentication implements AuthI
             return ["response" => ["success" => false, "message" => "El password no debe tener signos especiales"], "status_code" => 400];
         }
 
+        if (!password_verify($data->password, $this->usuario["password"])) {
+            return ["response" => ["success" => false, "message" => "Contraseña invalida"],"status_code" => 401] ;
+        }
+      
 
-
-        return["response" => ["success" => true, "message" => "bien"], "status_code" => 200];
+        return ["response" => ["success" => true, "message" => "bien"], "status_code" => 200];
     }
 
     public function gToken(): array
@@ -69,11 +71,9 @@ class Authentication implements AuthI
 
             $jwt = JWT::encode($payload, $key_jwt, 'HS256');
         } catch (\Throwable $th) {
-            return["response" => ["success" => false, "message" => "Ocurrio un problema, GTK-TC"], "status_code" => 409];
-            
+            return ["response" => ["success" => false, "message" => "Ocurrio un problema, GTK-TC"], "status_code" => 409];
         }
-        return["response" =>["success" => true,"message"=>"Inicio de sesion con exito", "jwt" => $jwt], "status_code" => 200];
-     
+        return ["response" => ["success" => true, "message" => "Inicio de sesion con exito", "jwt" => $jwt], "status_code" => 200];
     }
 
     public function vToken(RequestInterface $request)
@@ -82,7 +82,7 @@ class Authentication implements AuthI
 
         $authHeader = $request->getHeader('Authorization');
         if (!$authHeader) {
-            return ["response"=>["success" => false, "message" => "Usuario invalido, sin autorización"], "status_code" => 401];
+            return ["response" => ["success" => false, "message" => "Usuario invalido, sin autorización"], "status_code" => 401];
         }
         $token = null;
         if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
@@ -96,9 +96,9 @@ class Authentication implements AuthI
             $decoded = JWT::decode($token, new Key($key_jwt, 'HS256'));
         } catch (\Exception $ex) {
 
-            return ["response"=>["success" => false, "message" => "Usuario invalido, sin autorización"], "status_code" => 401];
+            return ["response" => ["success" => false, "message" => "Usuario invalido, sin autorización"], "status_code" => 401];
         }
 
-        return ["response"=>["success" => true], "decoded" => $decoded,"status_code"=>200];
+        return ["response" => ["success" => true], "decoded" => $decoded, "status_code" => 200];
     }
 }
