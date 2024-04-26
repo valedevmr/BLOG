@@ -29,6 +29,9 @@ class Authentication implements AuthI
             return ["response" => ["success" => false, "message" => "Ocurrio un problema, intenta más tarde"], "status_code" => 409];
         }
 
+        if (! $this->usuario) {
+            return ["response" => ["success" => false, "message" => "El correo no existe"], "status_code" => 400];
+        }
 
         if (!isset($data->password)) {
             return ["response" => ["success" => false, "message" => "El password es requerido"], "status_code" => 400];

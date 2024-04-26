@@ -112,7 +112,7 @@ class BlogHelp implements BlogHI
             return ["response" => ["success" => false, "message" => "Ocurrió un problema, intenta más tarde FH-DB-TC"], "status_code" => 409];
         }
 
-        return ["response" => ["success" => false, "message" => "Se elimino con exito el blog"], "status_code" => 200];
+        return ["response" => ["success" => true, "message" => "Se elimino con exito el blog"], "status_code" => 200];
     }
 
 
@@ -169,7 +169,9 @@ class BlogHelp implements BlogHI
                 ->where("deleted", 0)
 
                 ->where("id_user",  $this->data->id_user)
+                ->orderBy('publication_date', 'DESC')
                 ->limit($per_page, $offset);  // Limitar resultados por página
+
 
 
             if ($title) {
@@ -180,13 +182,27 @@ class BlogHelp implements BlogHI
                 $query->like('content', $content);
             }
 
-            // Ejecutar la consulta
             $result_set = $query->get();
             $results = $result_set->getResult();
+            $query_base = $db->table('blogs')
+                ->where("deleted", 0)
+                ->where("id_user",  $this->data->id_user);
 
+            // Añadir condiciones adicionales según sea necesario
+            if ($title) {
+                $query_base->like('title', $title);
+            } else if ($autor) {
+                $query_base->like('autor', $autor);
+            } else if ($content) {
+                $query_base->like('content', $content);
+            }
+
+            // Contar el total de filas
+            $total_rows = $query_base->countAllResults();
+          
 
             // Obtener el número total de resultados
-            $total_rows = count($results);
+            
         } catch (\Throwable $th) {
             return ["response" => ["success" => false, "message" => "Ocurrió un problema, intenta más tarde, FH-LB-TC"], "status_code" => 409];
         }
